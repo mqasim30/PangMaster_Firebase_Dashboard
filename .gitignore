@@ -1,0 +1,6 @@
+# Ignore the Firebase service account key file
+pang-master-firebase-adminsdk-fbsvc-149d620fce.json
+
+# Optionally ignore environment files if used for secrets
+.env
+test.py
