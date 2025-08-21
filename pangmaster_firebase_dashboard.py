@@ -96,10 +96,10 @@ def fetch_player(uid):
         logging.error(f"Error fetching player {uid}: {e}")
         return None
 
-# Function to fetch the latest 10 conversions efficiently with player data
+# Fixed function to fetch the latest conversions efficiently
 def fetch_latest_conversions_with_player_data(limit=10):
     try:
-        # Directly get the entire CONVERSIONS branch
+        # Get all conversions data - this is more efficient than the nested query
         conv_ref = database.reference("CONVERSIONS")
         all_data = conv_ref.get()
         
@@ -107,7 +107,7 @@ def fetch_latest_conversions_with_player_data(limit=10):
             logging.warning("No conversion data found")
             return []
             
-        # Flatten the nested structure
+        # Flatten the nested structure and collect all conversions
         all_conversions = []
         
         # Process the nested structure
@@ -127,14 +127,14 @@ def fetch_latest_conversions_with_player_data(limit=10):
                 }
                 all_conversions.append(conversion)
         
-        # Sort by time (descending) and take the latest ones
+        # Sort by time (descending) to get the most recent ones first
         sorted_conversions = sorted(
             all_conversions, 
             key=lambda x: x.get("time", 0), 
             reverse=True
         )
         
-        # Take only the requested number
+        # Take only the requested number of latest conversions
         latest_conversions = sorted_conversions[:limit]
         
         # Enhance each conversion with player data
@@ -150,6 +150,7 @@ def fetch_latest_conversions_with_player_data(limit=10):
                 player_fields = {
                     "player_geo": player_data.get("Geo", ""),
                     "player_source": player_data.get("Source", ""),
+                    "player_platform": player_data.get("Platform", "Android"),
                     "player_ip": player_data.get("IP", ""),
                     "player_wins": player_data.get("Wins", 0),
                     "player_impressions": player_data.get("Impressions", 0),
@@ -165,14 +166,14 @@ def fetch_latest_conversions_with_player_data(limit=10):
                 # If player data not found, just use the conversion data
                 enhanced_conversions.append(conversion)
         
-        logging.info(f"Found {len(all_conversions)} total conversions, returning {len(enhanced_conversions)} enhanced conversions")
+        logging.info(f"Returning {len(enhanced_conversions)} enhanced conversions (latest first)")
         
         return enhanced_conversions
         
     except Exception as e:
         logging.error(f"Error fetching conversions with player data: {e}")
         return []
-
+    
 def format_timestamp(timestamp):
     if pd.notna(timestamp) and timestamp != 0:
         try:
